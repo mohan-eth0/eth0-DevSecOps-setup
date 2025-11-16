@@ -149,8 +149,3 @@ fi
 
 echo -e "${GREEN}Setup finished. Please reboot your machine if prompted.${NC}"z
 
-
-
-
-
-
