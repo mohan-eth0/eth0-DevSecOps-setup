@@ -55,7 +55,7 @@ install_packages() {
 cloud_packages=(
   awscli
   azure-cli
-#  google-cloud-sdk
+ # google-cloud-sdk
  # terraform
   kubectl
   #helm
@@ -147,4 +147,10 @@ if dpkg-query -W -f='${Status}' ufw 2>/dev/null | grep -q "ok installed"; then
   sudo ufw enable
 fi
 
-echo -e "${GREEN}Setup finished. Please reboot your machine if prompted.${NC}"
+echo -e "${GREEN}Setup finished. Please reboot your machine if prompted.${NC}"z
+
+
+
+
+
+
