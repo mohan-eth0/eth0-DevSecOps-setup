@@ -1,9 +1,18 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
 echo "Installing Productivity Tools..."
 
-sudo apt install -y zsh git curl neofetch htop
+if [ "$(id -u)" -eq 0 ]; then
+  apt update -y
+  apt install -y zsh git curl neofetch htop
+else
+  sudo apt update -y
+  sudo apt install -y zsh git curl neofetch htop
+fi
 
-cp config/zshrc ~/.zshrc
-cp config/aliases ~/.aliases
+# copy config if present
+[ -f config/zshrc ] && cp config/zshrc ~/.zshrc
+[ -f config/aliases ] && cp config/aliases ~/.aliases
 
 echo "Productivity setup complete!"
