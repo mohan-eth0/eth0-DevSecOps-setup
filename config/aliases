@@ -1,0 +1,4 @@
+alias ll='ls -lah'
+alias gs='git status'
+alias upd='sudo apt update && sudo apt upgrade -y'
+alias ports='ss -tulnp'
