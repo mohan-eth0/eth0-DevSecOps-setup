@@ -37,7 +37,8 @@ show_logo() {
 ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝ 
       ETH0 DevSecOps Workstation
 -----------------------------------------
-
+EOF
+}
 ensure_update() {
   # call before apt installs from modules
   if [ "$(id -u)" -eq 0 ]; then
