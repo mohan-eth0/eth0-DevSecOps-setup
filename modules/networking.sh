@@ -1,26 +1,26 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
-echo "Installing Cloud & DevOps tools..."
+echo "=========================================="
+echo "     Installing Networking Tools"
+echo "=========================================="
 
-# update first
-if [ "$(id -u)" -eq 0 ]; then
-  apt update -y
-  apt install -y awscli ansible kubectl helm docker.io
-else
-  sudo apt update -y
-  sudo apt install -y awscli ansible kubectl helm docker.io
-fi
+sudo apt update -y
 
-# Terraform is not in Debian main in many cases; install HashiCorp repo safely
-if ! command -v terraform &>/dev/null; then
-  echo "Installing Terraform (HashiCorp repo)..."
-  sudo apt-get update -y
-  sudo apt-get install -y gnupg software-properties-common curl
-  curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-  echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
-  sudo apt update -y
-  sudo apt install -y terraform
-fi
+echo "Installing basic networking utilities..."
+sudo apt install -y net-tools iproute2 iputils-ping traceroute dnsutils curl wget
 
-echo "Cloud module installed!"
+echo "Installing advanced networking tools..."
+sudo apt install -y nmap tcpdump tshark whois ldnsutils openssh-client openvpn
+
+echo "Installing packet analysis and firewall tools..."
+sudo apt install -y wireshark-qt ufw nftables iptables
+
+echo "Enabling UFW firewall..."
+sudo ufw enable
+
+echo ""
+echo "=========================================="
+echo " Networking Tools Installed Successfully! "
+echo "=========================================="
+echo ""
+
