@@ -1,31 +1,31 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "Installing Cybersecurity Tools..."
+LOG="/var/log/eth0-cyber.log"
+echo "$(date -Is) [CYBER] Starting" | tee -a "$LOG"
 
-# ensure apt updated
-if [ "$(id -u)" -eq 0 ]; then
-  apt update -y
-  apt install -y john hydra nikto sqlmap gobuster wfuzz
+RUN="sudo"
+[ "$(id -u)" -eq 0 ] && RUN=""
+
+# Preflight: remove dead repos that break apt
+if grep -R "dl.bintray.com/etcher" /etc/apt/ -n >/dev/null 2>&1; then
+  echo "$(date -Is) [CYBER] Removing dead Etcher repo" | tee -a "$LOG"
+  $RUN sed -i '/dl.bintray.com\/etcher/d' /etc/apt/sources.list /etc/apt/sources.list.d/*.list 2>/dev/null || true
+fi
+
+echo "$(date -Is) [CYBER] apt update" | tee -a "$LOG"
+$RUN apt update -y >>"$LOG" 2>&1 || echo "$(date -Is) [CYBER] apt update had issues" | tee -a "$LOG"
+
+# Install common pentest tools (best-effort)
+$RUN apt install -y john hydra nikto sqlmap gobuster wfuzz nmap netcat-openbsd >>"$LOG" 2>&1 || echo "$(date -Is) [CYBER] some packages failed to install" | tee -a "$LOG"
+
+# Setup MOTD: use ascii logo if available
+if [ -f assets/logo.txt ]; then
+  echo "$(date -Is) [CYBER] Installing ASCII MOTD" | tee -a "$LOG"
+  $RUN cp assets/logo.txt /etc/motd
 else
-  sudo apt update -y
-  sudo apt install -y john hydra nikto sqlmap gobuster wfuzz
+  # create a simple text MOTD fallback
+  echo "ETH0 DevSecOps Workstation - Cybersecurity Mode" | $RUN tee /etc/motd >/dev/null
 fi
 
-# Cyber Theme MOTD - prefer png->text fallback
-if [ -f assets/logo.png ]; then
-  # if /etc/motd accepts text only, convert PNG to ASCII with fallback
-  if command -v jp2a &>/dev/null; then
-    jp2a --colors assets/logo.png | sudo tee /etc/motd > /dev/null
-  else
-    # fallback to stored ASCII banner if exists
-    if [ -f assets/logo.txt ]; then
-      sudo cp assets/logo.txt /etc/motd
-    fi
-  fi
-elif [ -f assets/logo.txt ]; then
-  sudo cp assets/logo.txt /etc/motd
-fi
-
-echo "Cybersecurity tools installed!"
-
+echo "$(date -Is) [CYBER] Completed" | tee -a "$LOG"

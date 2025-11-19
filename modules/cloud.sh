@@ -1,35 +1,32 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-echo "Installing Cloud & DevOps tools..."
+LOG="/var/log/eth0-cloud.log"
+echo "$(date -Is) [CLOUD] Starting" | tee -a "$LOG"
 
-sudo apt update -y
-sudo apt install -y curl wget unzip gnupg lsb-release ca-certificates apt-transport-https
+RUN="sudo"
+[ "$(id -u)" -eq 0 ] && RUN=""
 
-echo "Installing Terraform..."
-curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp.gpg
-echo "deb [signed-by=/usr/share/keyrings/hashicorp.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
-  | sudo tee /etc/apt/sources.list.d/hashicorp.list
-sudo apt update -y
-sudo apt install -y terraform
+# remove dead etcher repo if present (preflight)
+if grep -R "dl.bintray.com/etcher" /etc/apt/ -n >/dev/null 2>&1; then
+  echo "$(date -Is) [CLOUD] Removing dead Etcher repo" | tee -a "$LOG"
+  $RUN sed -i '/dl.bintray.com\/etcher/d' /etc/apt/sources.list /etc/apt/sources.list.d/*.list 2>/dev/null || true
+fi
 
-echo "Installing AWS CLI..."
-curl -sSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip -o awscliv2.zip
-sudo ./aws/install
-rm -rf aws awscliv2.zip
+echo "$(date -Is) [CLOUD] apt update" | tee -a "$LOG"
+$RUN apt update -y >>"$LOG" 2>&1 || echo "$(date -Is) [CLOUD] apt update had issues" | tee -a "$LOG"
 
-echo "Installing Docker..."
-curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker.gpg] \
-https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
-  | sudo tee /etc/apt/sources.list.d/docker.list
-sudo apt update -y
-sudo apt install -y docker-ce docker-ce-cli containerd.io
+echo "$(date -Is) [CLOUD] Installing common tools" | tee -a "$LOG"
+$RUN apt install -y apt-transport-https ca-certificates gnupg curl lsb-release >>"$LOG" 2>&1 || true
+$RUN apt install -y awscli ansible kubectl helm docker.io git jq >>"$LOG" 2>&1 || true
 
-echo "Installing kubectl..."
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-rm kubectl
+# Terraform via HashiCorp repo (idempotent)
+if ! command -v terraform &>/dev/null; then
+  echo "$(date -Is) [CLOUD] Installing Terraform from HashiCorp" | tee -a "$LOG"
+  $RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | $RUN gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg 2>/dev/null || true
+  echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | $RUN tee /etc/apt/sources.list.d/hashicorp.list >/dev/null
+  $RUN apt update -y >>"$LOG" 2>&1 || true
+  $RUN apt install -y terraform >>"$LOG" 2>&1 || echo "$(date -Is) [CLOUD] terraform install failed" | tee -a "$LOG"
+fi
 
-echo "Cloud & DevOps tools installed successfully!"
-
+echo "$(date -Is) [CLOUD] Completed" | tee -a "$LOG"

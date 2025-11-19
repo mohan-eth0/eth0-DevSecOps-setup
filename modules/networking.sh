@@ -1,26 +1,34 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-echo "=========================================="
-echo "     Installing Networking Tools"
-echo "=========================================="
+LOG="/var/log/eth0-networking.log"
+echo "$(date -Is) [NETWORK] Starting" | tee -a "$LOG"
 
-sudo apt update -y
+RUN="sudo"
+[ "$(id -u)" -eq 0 ] && RUN=""
 
-echo "Installing basic networking utilities..."
-sudo apt install -y net-tools iproute2 iputils-ping traceroute dnsutils curl wget
+# Preflight remove dead repos
+if grep -R "dl.bintray.com/etcher" /etc/apt/ -n >/dev/null 2>&1; then
+  echo "$(date -Is) [NETWORK] Removing dead Etcher repo" | tee -a "$LOG"
+  $RUN sed -i '/dl.bintray.com\/etcher/d' /etc/apt/sources.list /etc/apt/sources.list.d/*.list 2>/dev/null || true
+fi
 
-echo "Installing advanced networking tools..."
-sudo apt install -y nmap tcpdump tshark whois ldnsutils openssh-client openvpn
+echo "$(date -Is) [NETWORK] apt update" | tee -a "$LOG"
+$RUN apt update -y >>"$LOG" 2>&1 || echo "$(date -Is) [NETWORK] apt update had issues" | tee -a "$LOG"
 
-echo "Installing packet analysis and firewall tools..."
-sudo apt install -y wireshark-qt ufw nftables iptables
+echo "$(date -Is) [NETWORK] Installing network tools" | tee -a "$LOG"
+$RUN apt install -y net-tools nmap tcpdump traceroute mtr iperf3 ethtool iftop >>"$LOG" 2>&1 || true
 
-echo "Enabling UFW firewall..."
-sudo ufw enable
+# Optional: wireshark noninteractive selection (allow non-root sniff if desired)
+if dpkg -s wireshark &>/dev/null; then
+  echo "$(date -Is) [NETWORK] wireshark installed" | tee -a "$LOG"
+else
+  $RUN DEBIAN_FRONTEND=noninteractive apt install -y wireshark >>"$LOG" 2>&1 || echo "$(date -Is) [NETWORK] wireshark install failed or prompt skipped" | tee -a "$LOG"
+fi
 
-echo ""
-echo "=========================================="
-echo " Networking Tools Installed Successfully! "
-echo "=========================================="
-echo ""
+# Apply tmux config if exists
+if [ -f config/tmux.conf ]; then
+  cp config/tmux.conf ~/.tmux.conf || true
+fi
 
+echo "$(date -Is) [NETWORK] Completed" | tee -a "$LOG"
