@@ -57,7 +57,6 @@ main_menu() {
     echo "4) Productivity" >&3
     echo "5) Auto Update" >&3
     echo "6) Health Check" >&3
-    echo "7) Uninstall All" >&3
     echo "0) Exit" >&3
     read -p "Enter choice: " opt
     case $opt in
@@ -67,7 +66,6 @@ main_menu() {
         4) ensure_update; bash modules/productivity.sh ;;
         5) bash modules/auto-update.sh ;;
         6) bash health-check.sh ;;
-        7) bash uninstall.sh ;;
         0) exit 0 ;;
         *) echo "Invalid option" >&3 ;;
     esac
