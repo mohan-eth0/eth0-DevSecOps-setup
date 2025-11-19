@@ -1,18 +1,21 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
-echo "Installing Productivity Tools..."
+echo "=========================================="
+echo "     Installing Productivity Tools"
+echo "=========================================="
 
-if [ "$(id -u)" -eq 0 ]; then
-  apt update -y
-  apt install -y zsh git curl neofetch htop
-else
-  sudo apt update -y
-  sudo apt install -y zsh git curl neofetch htop
-fi
+sudo apt update -y
 
-# copy config if present
-[ -f config/zshrc ] && cp config/zshrc ~/.zshrc
-[ -f config/aliases ] && cp config/aliases ~/.aliases
+echo "Installing basic tools..."
+sudo apt install -y htop tmux screen tree nano vim git unzip zip
 
-echo "Productivity setup complete!"
+echo "Installing system info tool (fastfetch)..."
+sudo apt install -y fastfetch
+
+echo "Installing browsers & editors..."
+sudo apt install -y firefox-esr code
+
+echo "=========================================="
+echo " Productivity Tools Installed Successfully"
+echo "=========================================="
+
