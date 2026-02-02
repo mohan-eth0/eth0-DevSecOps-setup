@@ -14,4 +14,4 @@
 ╚══════╝   ╚═╝   ╚═════╝ ╚═════╝ 
 ⭐ Automated Debian Workstation Setup
 
-Built by Mohan (eth0) – Linux • Networking • Security • DevSecOps 
+Built by Mohan (eth0) – Linux • Networking • Security  • DevSecOps 
